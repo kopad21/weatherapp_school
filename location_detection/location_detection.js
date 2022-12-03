@@ -1,68 +1,74 @@
 function successFunction(position) {
-  var lat = position.coords.latitude;
-  var long = position.coords.longitude;
-  console.log('Your latitude is :'+lat+' and longitude is '+long);
-  sessionStorage.setItem('lat', lat);
-  sessionStorage.setItem('long', long);
+    var lat = position.coords.latitude;
+    var long = position.coords.longitude;
+    sessionStorage.setItem('lat', lat);
+    sessionStorage.setItem('long', long);
 }
-
+  
 function errorFunction() {
-  console.error('Error!');
+    window.location.href = "http://www.w3schools.com";
 }
-
+  
 if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+    navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
 } else {
-  console.error('It seems like Geolocation, which is required for this page, is not enabled in your browser. Please use a browser which supports it.');
+    console.error('It seems like Geolocation, which is required for this page, is not enabled in your browser. Please use a browser which supports it.');
 }
 
-const APP = {
-  TOKEN: 'pk.406422e2e1885dda468a42c370f8fbc0',
-  SEARCHURL: `https://us1.locationiq.com/v1/search.php?format=json&`,
-  REVERSEURL: `https://us1.locationiq.com/v1/reverse.php?format=json&`,
-  MAPURL: `https://maps.locationiq.com/v3/staticmap?`,
-  data: null,
-  init: () => {
-      APP.doReverse;
-      console.log("init");
-  },
-  showSearchResults: () => {
-    //display the results of the search
-    console.log(APP.data);
-    let section = document.querySelector('.results');
-    let pre = section.querySelector('pre');
-    if (!pre) {
-      pre = document.createElement('pre');
-      section.append(pre);
+function renderWeather(weather) {
+    console.log(weather);
+    var resultsContainer = document.querySelector("#weather-results");
+
+    var location_name = document.createElement("p");
+    location_name.textContent = "Location name " + weather.city.name;
+    resultsContainer.append(location_name);
+
+    var dt_text = document.createElement("p");
+    dt_text.textContent = "Date time " + weather.list[0].dt_txt;
+    resultsContainer.append(dt_text);
+
+    var temp = document.createElement("p");
+    temp.textContent = "Temp " + weather.list[0].main.temp;
+    resultsContainer.append(temp);
+
+    var temp_max = document.createElement("p");
+    temp_max.textContent = "Temp_max " + weather.list[0].main.temp_max;
+    resultsContainer.append(temp_max);
+
+    var temp_min = document.createElement("p");
+    temp_min.textContent = "Temp_min " + weather.list[0].main.temp_min;
+    resultsContainer.append(temp_min);
+
+    var wind_speed = document.createElement("p");
+    wind_speed.textContent = "Wind_speed " + weather.list[0].wind.speed;
+    resultsContainer.append(wind_speed);
+
+    var wind_deg = document.createElement("p");
+    wind_deg.textContent = "Wind_deg " + weather.list[0].wind.deg;
+    resultsContainer.append(wind_deg);
+
+    var weather_weather = document.createElement("p");
+    weather_weather.textContent = "weather_weather " + weather.list[0].weather[0].main;
+    resultsContainer.append(weather_weather);
+
+    if (wind_deg < "5") {
+        console.log("lol");
+    } else {
+        console.log("hah");
     }
-    //just dump the data response into the <pre> element
-    //just the first result from the array
-    pre.textContent = JSON.stringify(APP.data, null, 2);
-  },
-  doReverse: (ev) => {
-    ev.preventDefault();
+}
+
+function fetchWeather() {
     var lat = sessionStorage.getItem('lat');
-    var long = sessionStorage.getItem('long');
-    //build url
-    //let url = "https://us1.locationiq.com/v1/reverse.php?format=json&key=pk.406422e2e1885dda468a42c370f8fbc0&lat="+ lat +"&lon="+ long;
-    let url = "https://api.openweathermap.org/data/2.5/weather?lat="+ lat +"&lon="+ long +"&appid=2d3575bd2805d5b9687f3320c778f5ec&units=metric";
-    console.log(url);
-    //do a reverse geocoding call
-    //save the results in a global location
+    var lon = sessionStorage.getItem('long');
+    var url = "https://api.openweathermap.org/data/2.5/forecast?lat="+ lat +"&lon="+ lon +"&appid=2d3575bd2805d5b9687f3320c778f5ec&units=metric";
+
     fetch(url)
-      .then((resp) => {
-        if (!resp.ok) throw new Error(resp.statusText);
-        return resp.json();
-      })
-      .then((data) => {
-        console.log(data);
-        APP.data = data; //no [0]
-        APP.showSearchResults();
-      })
+      .then((response) => response.json())
+      .then((data) => renderWeather(data))
       .catch((err) => {
         console.error(err);
       });
-  },
-};
+}
 
-document.addEventListener('DOMContentLoaded', APP.doReverse);
+fetchWeather();
